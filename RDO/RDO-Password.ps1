@@ -23,6 +23,7 @@ Host:192.168.1.2
 Domain:
 User:administrator
 Password:123456
+Port:3389
 -------------------
 ------------------------------------------------------
 [+] C:\Users\Default.migrated\AppData\Local\RDO\Connections.dat
@@ -32,6 +33,7 @@ Host:www.google.com
 Domain:GOOGLE.corp
 User:administrator
 Password:qwerty
+Port:3389
 -------------------
 
 #> 
@@ -91,7 +93,7 @@ function Get-Detail([byte[]]$ByteStream,[int]$Start,[bool]$First)
 	$Distance1 = 5;
 	$Distance2 = 5;
 	$Distance3 = 5;
-	
+	$Distance4 = 1;
 	
 	$NameLen = [int]$ByteStream[$Start];
 	$Name = New-Object byte[] $($NameLen);
@@ -165,6 +167,16 @@ function Get-Detail([byte[]]$ByteStream,[int]$Start,[bool]$First)
 	$Name = [Text.Encoding]::ASCII.GetString($Name);
 	$Name = Decypt-Password $Name;
 	Write-Output "Password:$Name";
+	
+	$Start += 1 + $NameLen + $Distance4;
+	$NameLen = 4;
+	$Name = New-Object byte[] $NameLen;
+	[Array]::Copy($ByteStream, $Start, $Name, 0, $NameLen);
+	$Stream = New-Object IO.MemoryStream @(,$Name);
+	$Reader = New-Object IO.BinaryReader($Stream);
+	$Name = $Reader.ReadInt16();
+	$Reader.Close();
+	Write-Output "Port:$Name";
 	
 	Write-Output "-------------------";
 }

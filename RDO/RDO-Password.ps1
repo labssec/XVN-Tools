@@ -13,6 +13,7 @@ PS > Decypt-Password "***B1E5E1BF2459AB98D344A4EA31E604********"
 ...OR...
 powershell Import-Module RDO-Password.ps1;Decypt-Password "***B1E5E1BF2459AB98D344A4EA31E604********"
 powershell Import-Module RDO-Password.ps1;RDO-Password
+powershell Import-Module RDO-Password.ps1;RDO-Password C:\Connections.dat
 
 .TESTDEMO
 ------------------------------------------------------
@@ -229,29 +230,35 @@ function Get-ConnectInformation([string]$FilePath)
 function RDO-Password()
 {
 	[CmdletBinding()]
-	Param ()
+	Param ($DatPath)
 	
-	$MajorVer = [System.Environment]::OSVersion.Version.Major;
-	
-	if ($MajorVer -gt 5)
+	if ([String]::IsNullOrEmpty($DatPath))
 	{
-		$UserProfile = $ENV:SystemDrive+"\Users\";
+			if ([System.Environment]::OSVersion.Version.Major -gt 5)
+		{
+			$UserProfile = $ENV:SystemDrive+"\Users\";
+		}
+		else
+		{
+			$UserProfile = $ENV:SystemDrive+"\Documents and Settings\";
+		}
+
+		Get-ChildItem $UserProfile | ForEach-Object -Process {
+			if($_ -is [System.IO.DirectoryInfo])
+			{
+				$FilePath = $UserProfile+$_.name+"\AppData\Local\RDO\Connections.dat";
+				if ([IO.File]::Exists($FilePath))
+				{
+					Get-ConnectInformation($FilePath);
+				}
+
+			}
+		}
 	}
 	else
 	{
-		$UserProfile = $ENV:SystemDrive+"\Documents and Settings\";
+		Get-ConnectInformation($DatPath);
 	}
 
-	Get-ChildItem $UserProfile | ForEach-Object -Process {
-		if($_ -is [System.IO.DirectoryInfo])
-		{
-			$FilePath = $UserProfile+$_.name+"\AppData\Local\RDO\Connections.dat";
-			if ([IO.File]::Exists($FilePath))
-			{
-				Get-ConnectInformation($FilePath);
-			}
-
-		}
-	}
 }
 

@@ -169,7 +169,7 @@ function Get-Detail([byte[]]$ByteStream,[int]$Start,[bool]$First)
 	Write-Output "Password:$Name";
 	
 	$Start += 1 + $NameLen + $Distance4;
-	$NameLen = 4;
+	$NameLen = 2;
 	$Name = New-Object byte[] $NameLen;
 	[Array]::Copy($ByteStream, $Start, $Name, 0, $NameLen);
 	$Stream = New-Object IO.MemoryStream @(,$Name);
